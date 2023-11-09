@@ -1,0 +1,31 @@
+---
+
+mattermost_docker_url: "" # https://mattermost-t-138.agrohistory.com:8065
+mattermost_docker_postgres_user: "" # mattermost
+mattermost_docker_postgres_password: "" # supersecure
+mattermost_docker_postgres_database: "" # mattermost_db
+mattermost_docker_postgres_host: "" # postgre-t-138.agrohistory.local:5432
+
+###
+
+mattermost_docker_install_path: /docker
+mattermost_docker_uid: 2000
+mattermost_docker_gid: 2000
+mattermost_docker_edition: mattermost-team-edition # 'mattermost-enterprise-edition' or 'mattermost-team-edition'
+mattermost_docker_version: 7.8
+mattermost_docker_timezone: Europe/Moscow
+mattermost_docker_restart_policy: unless-stopped
+mattermost_docker_container_readonly: false
+mattermost_docker_app_port: 8065
+mattermost_docker_calls_port: 8443
+mattermost_docker_db_driver: postgres
+mattermost_docker_bleve_index_dir: /mattermost/bleve-indexes
+
+### volumes
+
+mattermost_docker_volume_config: ./volumes/app/mattermost/config
+mattermost_docker_volume_data: ./volumes/app/mattermost/data
+mattermost_docker_volume_logs: ./volumes/app/mattermost/logs
+mattermost_docker_volume_plugins: ./volumes/app/mattermost/plugins
+mattermost_docker_volume_client_plugins: ./volumes/app/mattermost/client/plugins
+mattermost_docker_volume_bleve_index: ./volumes/app/mattermost/bleve-indexes

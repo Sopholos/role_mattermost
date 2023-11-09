@@ -1,0 +1,42 @@
+# https://docs.docker.com/compose/environment-variables/
+
+version: "2.4"
+
+services:
+  mattermost:
+    image: mattermost/{{ mattermost_docker_edition }}:{{ mattermost_docker_version }}
+    restart: {{ mattermost_docker_restart_policy }}
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    read_only: {{ mattermost_docker_container_readonly }}
+    tmpfs:
+      - /tmp
+    volumes:
+      - {{ mattermost_docker_volume_config }}:/mattermost/config:rw
+      - {{ mattermost_docker_volume_data }}:/mattermost/data:rw
+      - {{ mattermost_docker_volume_logs }}:/mattermost/logs:rw
+      - {{ mattermost_docker_volume_plugins }}:/mattermost/plugins:rw
+      - {{ mattermost_docker_volume_client_plugins }}:/mattermost/client/plugins:rw
+      - {{ mattermost_docker_volume_bleve_index }}:/mattermost/bleve-indexes:rw
+      # When you want to use SSO with GitLab, you have to add the cert pki chain of GitLab inside Alpine
+      # to avoid Token request failed: certificate signed by unknown authority
+      # (link: https://github.com/mattermost/mattermost-server/issues/13059 and https://github.com/mattermost/docker/issues/34)
+      # - ${GITLAB_PKI_CHAIN_PATH}:/etc/ssl/certs/pki_chain.pem:ro
+    environment:
+      # timezone inside container
+      - {{ mattermost_docker_timezone }}
+      # necessary Mattermost options/variables (see env.example)
+      - {{ mattermost_docker_db_driver }}
+      - postgres://{{ mattermost_docker_postgres_user }}:{{ mattermost_docker_postgres_password }}@{{ mattermost_docker_postgres_host }}/{{ mattermost_docker_postgres_database }}?connect_timeout=10
+      # necessary for bleve
+      - {{ mattermost_docker_bleve_index_dir }}
+      # additional settings
+      - {{ mattermost_docker_url }}
+    ports:
+      - {{ mattermost_docker_app_port }}:8065
+      - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/udp
+      - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/tcp
+# If you use rolling image tags and feel lucky watchtower can automatically pull new images and
+# instantiate containers from it. https://containrrr.dev/watchtower/
+# Please keep in mind watchtower will have access on the docker socket. This can be a security risk.

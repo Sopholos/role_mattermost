@@ -9,22 +9,15 @@
 
 - name: Clone mattermost-docker
   git:
-    repo: https://github.com/mattermost/mattermost-docker
-    dest: "{{ mattermost_docker_install_path }}/mattermost-docker"
-    version: "{{ mattermost_docker_version }}"
-
-- name: Create volume backup directory
-  file:
-    state: directory
-    path: "{{ mattermost_docker_install_path }}/backups"
-    owner: root
-    group: root
-    mode: 0600
+    repo: https://github.com/mattermost/docker
+    dest: "{{ mattermost_docker_install_path }}/mattermost"
+    # version: "{{ mattermost_docker_version }}"
+    force: yes
 
 - name: Template docker-compose.yml
   template:
     src: docker-compose.yml.j2
-    dest: "{{ mattermost_docker_install_path }}/mattermost-docker/docker-compose.yml"
+    dest: "{{ mattermost_docker_install_path }}/mattermost/docker-compose.yml"
     owner: root
     group: root
     mode: 0600
@@ -32,8 +25,8 @@
 
 - name: Template systemd unit
   template:
-    src: mattermost-docker.service.j2
-    dest: /etc/systemd/system/mattermost-docker.service
+    src: mattermost.service.j2
+    dest: /etc/systemd/system/mattermost.service
     owner: root
     group: root
     mode: 0644
@@ -46,18 +39,70 @@
 
 - name: Enable service
   systemd:
-    name: mattermost-docker.service
+    name: mattermost.service
     enabled: yes
 
-- name: Build images
-  docker_service:
-    project_src: "{{ mattermost_docker_install_path }}/mattermost-docker"
-    state: present
-    stopped: yes
+- name: Create dirs
+  file:
+    path: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/{{ item }}"
+    state: directory
+  loop:
+    - config
+    - data
+    - logs
+    - plugins
+    - client
+    - client/plugins
+    - bleve-indexes
+
+- name: Copy cert to matter
+  copy:
+    src: agroassist.ru.2023.cert.crt
+    dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/config/cert.crt"
+    owner: 2000
+    group: 2000
+    mode: 0644
+  no_log: yes
+
+- name: Copy cert to nginx
+  copy:
+    src: agroassist.ru.2023.cert.crt
+    dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/web/cert/cert.crt"
+    owner: root
+    group: root
+    mode: 0644
+  no_log: yes
+
+- name: Copy key to matter
+  copy:
+    src: agroassist.ru.2023.key.crt
+    dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/config/key.crt"
+    owner: 2000
+    group: 2000
+    mode: 0600
+  no_log: yes
+
+- name: Copy key to nginx
+  copy:
+    src: agroassist.ru.2023.key.crt
+    dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/web/cert/key.crt"
+    owner: root
+    group: root
+    mode: 0600
+  no_log: yes
+
+- name: create mattermost config
+  template:
+    src: config.json.j2
+    dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/config/config.json"
+    owner: 2000
+    group: 2000
+    mode: 0644
+  no_log: yes
 
 - name: Update volume directory permissions
   file:
-    path: "{{ mattermost_docker_install_path }}/volumes"
+    path: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/"
     state: directory
     owner: 2000
     group: 2000
@@ -66,9 +111,5 @@
 
 - name: Start containers
   systemd:
-    name: mattermost-docker.service
+    name: mattermost.service
     state: started
-
-- name: User information
-  debug:
-    msg: You can now login to your Mattermost instance and do the initial setup. Run the restart-mattermost.yml playbook when you are done.

@@ -25,14 +25,14 @@ services:
       # - ${GITLAB_PKI_CHAIN_PATH}:/etc/ssl/certs/pki_chain.pem:ro
     environment:
       # timezone inside container
-      - {{ mattermost_docker_timezone }}
+      - TZ={{ mattermost_docker_timezone }}
       # necessary Mattermost options/variables (see env.example)
-      - {{ mattermost_docker_db_driver }}
-      - postgres://{{ mattermost_docker_postgres_user }}:{{ mattermost_docker_postgres_password }}@{{ mattermost_docker_postgres_host }}/{{ mattermost_docker_postgres_database }}?connect_timeout=10
+      - MM_SQLSETTINGS_DRIVERNAME={{ mattermost_docker_db_driver }}
+      - MM_SQLSETTINGS_DATASOURCE=postgres://{{ mattermost_docker_postgres_user }}:{{ mattermost_docker_postgres_password }}@{{ mattermost_docker_postgres_host }}/{{ mattermost_docker_postgres_database }}?connect_timeout=10
       # necessary for bleve
-      - {{ mattermost_docker_bleve_index_dir }}
+      - MM_BLEVESETTINGS_INDEXDIR={{ mattermost_docker_bleve_index_dir }}
       # additional settings
-      - {{ mattermost_docker_url }}
+      - MM_SERVICESETTINGS_SITEURL={{ mattermost_docker_url }}
     ports:
       - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/udp
       - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/tcp
@@ -60,7 +60,7 @@ services:
       - {{ mattermost_docker_nginx_key_path }}:/key.pem:ro
     environment:
       # timezone inside container
-      - TZ
+      - TZ={{ mattermost_docker_timezone }}
     ports:
       - {{ mattermost_docker_nginx_https_port }}:443
       - {{ mattermost_docker_nginx_http_port }}:80

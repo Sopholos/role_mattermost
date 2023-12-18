@@ -57,7 +57,7 @@
 
 - name: Copy cert to matter
   copy:
-    src: agroassist.ru.2023.cert.crt
+    content: "{{ ssl_cert_agroassist_ru }}"
     dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/config/cert.crt"
     owner: 2000
     group: 2000
@@ -66,7 +66,7 @@
 
 - name: Copy cert to nginx
   copy:
-    src: agroassist.ru.2023.cert.crt
+    content: "{{ ssl_cert_agroassist_ru }}"
     dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/web/cert/cert.crt"
     owner: root
     group: root
@@ -75,7 +75,7 @@
 
 - name: Copy key to matter
   copy:
-    src: agroassist.ru.2023.key.crt
+    content: "{{ ssl_key_agroassist_ru }}"
     dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/app/mattermost/config/key.crt"
     owner: 2000
     group: 2000
@@ -84,7 +84,7 @@
 
 - name: Copy key to nginx
   copy:
-    src: agroassist.ru.2023.key.crt
+    content: "{{ ssl_key_agroassist_ru }}"
     dest: "{{ mattermost_docker_install_path }}/mattermost/volumes/web/cert/key.crt"
     owner: root
     group: root

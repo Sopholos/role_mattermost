@@ -1,0 +1,7 @@
+---
+
+- include_tasks: install.yml
+  when: mattermost_docker_install is defined and mattermost_docker_install
+
+- include_tasks: restart.yml
+  when: mattermost_docker_restart is defined and mattermost_docker_restart

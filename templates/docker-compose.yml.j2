@@ -1,0 +1,76 @@
+# https://docs.docker.com/compose/environment-variables/
+
+version: "2.4"
+
+services:
+  mattermost:
+    image: mattermost/{{ mattermost_docker_edition }}:{{ mattermost_docker_version }}
+    restart: {{ mattermost_docker_restart_policy }}
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 200
+    read_only: {{ mattermost_docker_container_readonly }}
+    tmpfs:
+      - /tmp
+    volumes:
+      - {{ mattermost_docker_volume_config }}:/mattermost/config:rw
+      - {{ mattermost_docker_volume_data }}:/mattermost/data:rw
+      - {{ mattermost_docker_volume_logs }}:/mattermost/logs:rw
+      - {{ mattermost_docker_volume_plugins }}:/mattermost/plugins:rw
+      - {{ mattermost_docker_volume_client_plugins }}:/mattermost/client/plugins:rw
+      - {{ mattermost_docker_volume_bleve_index }}:/mattermost/bleve-indexes:rw
+      # When you want to use SSO with GitLab, you have to add the cert pki chain of GitLab inside Alpine
+      # to avoid Token request failed: certificate signed by unknown authority
+      # (link: https://github.com/mattermost/mattermost-server/issues/13059 and https://github.com/mattermost/docker/issues/34)
+      # - ${GITLAB_PKI_CHAIN_PATH}:/etc/ssl/certs/pki_chain.pem:ro
+    environment:
+      # timezone inside container
+      - TZ={{ mattermost_docker_timezone }}
+      # necessary Mattermost options/variables (see env.example)
+      - MM_SQLSETTINGS_DRIVERNAME={{ mattermost_docker_db_driver }}
+      - MM_SQLSETTINGS_DATASOURCE=postgres://{{ mattermost_docker_postgres_user }}:{{ mattermost_docker_postgres_password }}@{{ mattermost_docker_postgres_host }}/{{ mattermost_docker_postgres_database }}?connect_timeout=10
+      # necessary for bleve
+      - MM_BLEVESETTINGS_INDEXDIR={{ mattermost_docker_bleve_index_dir }}
+      # additional settings
+      - MM_SERVICESETTINGS_SITEURL={{ mattermost_docker_url }}
+    ports:
+      - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/udp
+      - {{ mattermost_docker_calls_port }}:{{ mattermost_docker_calls_port }}/tcp
+# If you use rolling image tags and feel lucky watchtower can automatically pull new images and
+# instantiate containers from it. https://containrrr.dev/watchtower/
+# Please keep in mind watchtower will have access on the docker socket. This can be a security risk.
+  nginx:
+    depends_on:
+      - mattermost
+    container_name: nginx_mattermost
+    image: nginx:{{ mattermost_docker_nginx_image_tag }}
+    restart: {{ mattermost_docker_nginx_restart_policy }}
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 100
+    read_only: true
+    tmpfs:
+      - /var/run
+      - /var/cache
+      - /var/log/nginx
+    volumes:
+      - {{ mattermost_docker_nginx_config_path }}:/etc/nginx/conf.d:ro
+      - {{ mattermost_docker_nginx_dhparams_file }}:/dhparams4096.pem
+      - {{ mattermost_docker_nginx_cert_path }}:/cert.pem:ro
+      - {{ mattermost_docker_nginx_key_path }}:/key.pem:ro
+    environment:
+      # timezone inside container
+      - TZ={{ mattermost_docker_timezone }}
+    ports:
+      - {{ mattermost_docker_nginx_https_port }}:443
+      - {{ mattermost_docker_nginx_http_port }}:80
+
+# Shared volume for Let's Encrypt certificate renewal with a webroot
+volumes:
+  shared-webroot:
+    name: shared-webroot
+
+# This network name is being used for Let's Encrypt certificate renewal
+networks:
+  default:
+    name: mattermost

@@ -23,7 +23,9 @@
         "EnableOAuthServiceProvider": true,
         "EnableIncomingWebhooks": true,
         "EnableOutgoingWebhooks": true,
+        "EnableOutgoingOAuthConnections": false,
         "EnableCommands": true,
+        "OutgoingIntegrationRequestsTimeout": 30,
         "EnablePostUsernameOverride": false,
         "EnablePostIconOverride": false,
         "GoogleDeveloperKey": "",
@@ -106,7 +108,10 @@
         "ManagedResourcePaths": "",
         "EnableCustomGroups": true,
         "SelfHostedPurchase": true,
-        "AllowSyncedDrafts": true
+        "AllowSyncedDrafts": true,
+        "UniqueEmojiReactionLimitPerPost": 50,
+        "RefreshPostStatsRunTime": "00:00",
+        "MaximumPayloadSizeBytes": 300000
     },
     "TeamSettings": {
         "SiteName": "Mattermost",
@@ -229,6 +234,7 @@
         "AmazonS3SSE": false,
         "AmazonS3Trace": false,
         "AmazonS3RequestTimeoutMilliseconds": 30000,
+        "AmazonS3UploadPartSizeBytes": 5242880,
         "DedicatedExportStore": false,
         "ExportDriverName": "local",
         "ExportDirectory": "./data/",
@@ -243,26 +249,27 @@
         "ExportAmazonS3SSE": false,
         "ExportAmazonS3Trace": false,
         "ExportAmazonS3RequestTimeoutMilliseconds": 30000,
-        "ExportAmazonS3PresignExpiresSeconds": 21600
+        "ExportAmazonS3PresignExpiresSeconds": 21600,
+        "ExportAmazonS3UploadPartSizeBytes": 104857600
     },
     "EmailSettings": {
-        "EnableSignUpWithEmail": true,
-        "EnableSignInWithEmail": true,
-        "EnableSignInWithUsername": true,
-        "SendEmailNotifications": true,
-        "UseChannelInEmailNotifications": false,
-        "RequireEmailVerification": false,
-        "FeedbackName": "",
-        "FeedbackEmail": "test@example.com",
-        "ReplyToAddress": "test@example.com",
-        "FeedbackOrganization": "",
-        "EnableSMTPAuth": false,
-        "SMTPUsername": "",
-        "SMTPPassword": "",
-        "SMTPServer": "localhost",
-        "SMTPPort": "10025",
-        "SMTPServerTimeout": 10,
-        "ConnectionSecurity": "",
+        "EnableSignUpWithEmail": {{ mattermost_docker_email_settings.enablesignupwithemail }},
+        "EnableSignInWithEmail": {{ mattermost_docker_email_settings.enablesigninwithemail }},
+        "EnableSignInWithUsername": {{ mattermost_docker_email_settings.enablesigninwithusername }},
+        "SendEmailNotifications": {{ mattermost_docker_email_settings.sendemailnotifications }},
+        "UseChannelInEmailNotifications": {{ mattermost_docker_email_settings.usechannelinemailnotifications }},
+        "RequireEmailVerification": {{ mattermost_docker_email_settings.requireemailverification }},
+        "FeedbackName": "{{ mattermost_docker_email_settings.feedbackname }}",
+        "FeedbackEmail": "{{ mattermost_docker_email_settings.feedbackemail }}",
+        "ReplyToAddress": "{{ mattermost_docker_email_settings.replytoaddress }}",
+        "FeedbackOrganization": "{{ mattermost_docker_email_settings.feedbackorganization }}",
+        "EnableSMTPAuth": {{ mattermost_docker_email_settings.enablesmtpauth }},
+        "SMTPUsername": "{{ mattermost_docker_email_settings.smtpusername }}",
+        "SMTPPassword": "{{ mattermost_docker_email_settings.smtppassword }}",
+        "SMTPServer": "{{ mattermost_docker_email_settings.smtpserver }}",
+        "SMTPPort": "{{ mattermost_docker_email_settings.smtpport }}",
+        "SMTPServerTimeout": {{ mattermost_docker_email_settings.smtpservertimeout }},
+        "ConnectionSecurity": "{{ mattermost_docker_email_settings.connectionsecurity }}",
         "SendPushNotifications": true,
         "PushNotificationServer": "https://push-test.mattermost.com",
         "PushNotificationContents": "full",
@@ -270,7 +277,7 @@
         "EnableEmailBatching": false,
         "EmailBatchingBufferSize": 256,
         "EmailBatchingInterval": 30,
-        "EnablePreviewModeBanner": true,
+        "EnablePreviewModeBanner": false,
         "SkipServerCertificateVerification": false,
         "EmailNotificationContentsType": "full",
         "LoginButtonColor": "#0000",
@@ -471,11 +478,7 @@
         "EnableGossipCompression": true,
         "EnableExperimentalGossipEncryption": false,
         "ReadOnlyConfig": true,
-        "GossipPort": 8074,
-        "StreamingPort": 8075,
-        "MaxIdleConns": 100,
-        "MaxIdleConnsPerHost": 128,
-        "IdleConnTimeoutMilliseconds": 90000
+        "GossipPort": 8074
     },
     "MetricsSettings": {
         "Enable": false,
@@ -487,7 +490,6 @@
         "ClientSideCertCheck": "secondary",
         "LinkMetadataTimeoutMilliseconds": 5000,
         "RestrictSystemAdmin": false,
-        "UseNewSAMLLibrary": false,
         "EnableSharedChannels": false,
         "EnableRemoteClusterService": false,
         "DisableAppBar": false,
@@ -536,7 +538,9 @@
         "EnableFileDeletion": false,
         "EnableBoardsDeletion": false,
         "MessageRetentionDays": 365,
+        "MessageRetentionHours": 0,
         "FileRetentionDays": 365,
+        "FileRetentionHours": 0,
         "BoardsRetentionDays": 365,
         "DeletionJobStartTime": "02:00",
         "BatchSize": 3000,
@@ -555,7 +559,9 @@
             "SMTPUsername": "",
             "SMTPPassword": "",
             "EmailAddress": "",
-            "SMTPServerTimeout": 1800
+            "SMTPServerTimeout": 1800,
+            "CustomSMTPServerName": "",
+            "CustomSMTPPort": "25"
         }
     },
     "JobSettings": {
@@ -573,8 +579,11 @@
         "Directory": "./plugins",
         "ClientDirectory": "./client/plugins",
         "Plugins": {
+            "com.mattermost.nps": {
+                "enablesurvey": false
+            },
             "playbooks": {
-                "BotUserID": "tgiic3b777rq8j4ze5ciaznexo"
+                "BotUserID": "7azhncc63ffatxfcyuq4iewksc"
             }
         },
         "PluginStates": {
@@ -585,7 +594,7 @@
                 "Enable": true
             },
             "com.mattermost.nps": {
-                "Enable": true
+                "Enable": false
             },
             "com.mattermost.plugin-channel-export": {
                 "Enable": true
@@ -607,8 +616,7 @@
     },
     "DisplaySettings": {
         "CustomURLSchemes": [],
-        "MaxMarkdownNodes": 0,
-        "ExperimentalTimezone": true
+        "MaxMarkdownNodes": 0
     },
     "GuestAccountsSettings": {
         "Enable": false,
@@ -626,7 +634,8 @@
     "CloudSettings": {
         "CWSURL": "https://customers.mattermost.com",
         "CWSAPIURL": "https://portal.internal.prod.cloud.mattermost.com",
-        "CWSMock": false
+        "CWSMock": false,
+        "Disable": false
     },
     "ImportSettings": {
         "Directory": "./import",
@@ -635,5 +644,14 @@
     "ExportSettings": {
         "Directory": "./export",
         "RetentionDays": 30
+    },
+    "WranglerSettings": {
+        "PermittedWranglerRoles": [],
+        "AllowedEmailDomain": [],
+        "MoveThreadMaxCount": 100,
+        "MoveThreadToAnotherTeamEnable": false,
+        "MoveThreadFromPrivateChannelEnable": false,
+        "MoveThreadFromDirectMessageChannelEnable": false,
+        "MoveThreadFromGroupMessageChannelEnable": false
     }
 }

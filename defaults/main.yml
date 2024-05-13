@@ -39,3 +39,24 @@ mattermost_docker_nginx_cert_path: "./volumes/web/cert/cert.crt"
 mattermost_docker_nginx_key_path: "./volumes/web/cert/key.crt"
 mattermost_docker_nginx_https_port: 443
 mattermost_docker_nginx_http_port: 80
+
+## email settings
+
+mattermost_docker_email_settings:
+  enablesignupwithemail: false
+  enablesigninwithemail: true
+  enablesigninwithusername: false
+  sendemailnotifications: true
+  usechannelinemailnotifications: false
+  requireemailverification: false
+  feedbackname: "Mattermost notes"
+  feedbackemail: "test@example.com"
+  replytoaddress: "test@example.com"
+  feedbackorganization: ""
+  enablesmtpauth: true
+  smtpusername: "test@example.com"
+  smtppassword: password
+  smtpserver: "smtp.mail.com"
+  smtpport: "465"
+  smtpservertimeout: 10
+  connectionsecurity: "TLS"
